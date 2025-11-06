@@ -1,7 +1,7 @@
 FROM nginx:1.26.3
 
 ENV NGINX_VERSION="1.26.3"
-ENV NGINX_VTS_VERSION="0.2.3"
+ENV NGINX_VTS_VERSION="0.2.4"
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends gnupg2 lsb-release \

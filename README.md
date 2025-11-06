@@ -5,8 +5,7 @@ Custom Docker image based on `nginx:1.26.3` with the [nginx-module-vts](https://
 ## Features
 
 - Builds the official NGINX source for version `1.26.3` and adds the `vts` module during compilation.
-- Verifies the upstream NGINX GPG signing key fingerprint before enabling the Debian source repository.
-- Multi-stage build keeps the final image minimal by discarding build toolchains and temporary artifacts.
+- Includes a GitHub Actions workflow for publishing images to GitHub Container Registry (GHCR).
 
 ## Building the image
 
@@ -14,7 +13,7 @@ Custom Docker image based on `nginx:1.26.3` with the [nginx-module-vts](https://
 docker build -t nginx-vts .
 ```
 
-The build stage fetches the vanilla NGINX packaging for Debian, injects the module, and produces a `.deb` package that is installed in the runtime stage.
+The build process fetches the vanilla NGINX packaging for Debian, injects the module, builds the `.deb` package, and installs it into the same image.
 
 ## Publishing to GitHub Container Registry
 
@@ -61,4 +60,4 @@ With the configuration above, visiting `http://localhost:8080/status` will retur
 
 ## License
 
-The project is licensed under the [MIT License](./LICENSE).
+The project is released under [The Unlicense](./LICENSE).
