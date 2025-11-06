@@ -2,7 +2,8 @@ name: Build and publish image
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - '**'
     tags: [ 'v*' ]
   workflow_dispatch:
 
@@ -40,7 +41,8 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=ref,event=branch
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/master' }}
+            type=raw,value=dev,enable=${{ startsWith(github.ref, 'refs/heads/') && github.ref != 'refs/heads/master' }}
             type=ref,event=tag
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
