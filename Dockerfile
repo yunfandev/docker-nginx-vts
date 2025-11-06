@@ -1,14 +1,13 @@
 FROM nginx:1.26.3
 
 ENV NGINX_VERSION="1.26.3"
-ENV NGINX_VTS_VERSION="0.2.3"
+ENV NGINX_VTS_VERSION="0.2.4"
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends gnupg2 lsb-release \
   && curl https://nginx.org/keys/nginx_signing.key \
   | gpg --dearmor -o /usr/share/keyrings/nginx-archive-keyring.gpg \
-  && echo "deb-src [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] \
-  http://nginx.org/packages/debian `lsb_release -cs` nginx" > /etc/apt/sources.list.d/nginx.list \
+  && echo "deb-src [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] http://nginx.org/packages/debian `lsb_release -cs` nginx" > /etc/apt/sources.list.d/nginx.list \
   && apt-get update \
   && apt-get install -y --no-install-recommends dpkg-dev curl \
   && mkdir -p /opt/rebuildnginx \
