@@ -16,6 +16,21 @@ docker build -t nginx-vts .
 
 The build stage fetches the vanilla NGINX packaging for Debian, injects the module, and produces a `.deb` package that is installed in the runtime stage.
 
+## Publishing to GitHub Container Registry
+
+This repository ships with a GitHub Actions workflow that publishes the image to the
+[GitHub Container Registry (GHCR)](https://ghcr.io) whenever changes land on the
+`main` branch, a version tag starting with `v` is pushed, or the workflow is
+triggered manually.
+
+The workflow logs in with the repository's `GITHUB_TOKEN`, builds the image for
+`linux/amd64`, and pushes tags that reflect the branch or tag name. You can find the
+definition in [`.github/workflows/docker-publish.yml`](.github/workflows/docker-publish.yml).
+
+To make the resulting package discoverable, ensure the image visibility is set to
+public (from the GitHub UI under **Packages**) or configure any additional registry
+secrets if you plan to publish to a private namespace.
+
 ## Usage
 
 Run the container as you would the official NGINX image:
