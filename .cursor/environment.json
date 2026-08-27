@@ -1,0 +1,5 @@
+{
+  "name": "docker-nginx-vts",
+  "install": "bash .cursor/install.sh",
+  "start": "bash .cursor/start-docker.sh"
+}
