@@ -1,30 +1,22 @@
 #!/usr/bin/env bash
-# Idempotently start the Docker daemon inside the Cloud Agent VM.
+# Per-boot Docker daemon for the Cloud Agent VM (the environment "start" command).
 #
-# The VM is itself a container with an overlay rootfs and no netfilter/systemd,
-# so dockerd is configured (see .cursor/install.sh) to use the fuse-overlayfs
-# storage driver with iptables disabled, and is launched here as a background
-# process rather than via systemd.
+# The VM is itself a container with an overlay rootfs and no systemd, and the
+# daemon is configured (see .cursor/install.sh) to use the fuse-overlayfs storage
+# driver with iptables disabled. This script runs dockerd in the FOREGROUND so the
+# platform keeps it attached for the lifetime of the agent session; a backgrounded
+# daemon would be reaped once the start command returned.
 set -euo pipefail
 
+# Safety net: if a daemon is already reachable, don't launch a second one. Stay
+# attached so this start slot keeps running.
 if sudo docker info >/dev/null 2>&1; then
-  echo "dockerd already running"
-  exit 0
+  echo "dockerd already running; staying attached."
+  exec tail -f /dev/null
 fi
 
-# Remove a stale pid file left behind by a previous (now dead) daemon.
+# Remove a stale pid file left by a previous (now dead) daemon.
 sudo rm -f /var/run/docker.pid
 
-sudo bash -c 'nohup dockerd >/var/log/dockerd.log 2>&1 &'
-
-for _ in $(seq 1 60); do
-  if sudo docker info >/dev/null 2>&1; then
-    echo "dockerd is ready"
-    exit 0
-  fi
-  sleep 1
-done
-
-echo "dockerd failed to become ready; last log lines:" >&2
-sudo tail -n 50 /var/log/dockerd.log >&2 || true
-exit 1
+echo "Starting dockerd in the foreground..."
+exec sudo dockerd

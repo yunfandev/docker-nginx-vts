@@ -9,7 +9,29 @@ set -euo pipefail
 export DEBIAN_FRONTEND=noninteractive
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Start dockerd in the background (only for the duration of this install so we can
+# build the image) and wait until it is reachable. The per-boot daemon is owned by
+# the "start" command (.cursor/start-docker.sh); this backgrounded instance does
+# not need to survive install.
+ensure_dockerd() {
+  if sudo docker info >/dev/null 2>&1; then
+    echo "dockerd already running"
+    return 0
+  fi
+  sudo rm -f /var/run/docker.pid
+  sudo bash -c 'nohup dockerd >/var/log/dockerd.log 2>&1 &'
+  for _ in $(seq 1 60); do
+    if sudo docker info >/dev/null 2>&1; then
+      echo "dockerd is ready"
+      return 0
+    fi
+    sleep 1
+  done
+  echo "dockerd failed to become ready; last log lines:" >&2
+  sudo tail -n 50 /var/log/dockerd.log >&2 || true
+  return 1
+}
 
 if ! command -v docker >/dev/null 2>&1; then
   echo "Installing Docker engine and dependencies..."
@@ -45,7 +67,7 @@ sudo groupadd -f docker
 sudo usermod -aG docker ubuntu
 
 # Start the daemon so we can build the image now.
-bash "${SCRIPT_DIR}/start-docker.sh"
+ensure_dockerd
 
 # Build the repository image so it is validated and cached in the snapshot.
 # --network host is required because the daemon runs without bridge NAT.
